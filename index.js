@@ -1,9 +1,13 @@
 import express from 'express';
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import 'dotenv/config'
+import cors from "cors"
 
 const app = express();  
 const PORT = process.env.PORT || 8000;
+
+app.use(cors())
+app.use(express.json())
 
 const client = new MongoClient(process.env.MONGODB_URI);
 
@@ -28,6 +32,22 @@ app.get('/', (req, res) => {
 
 app.get('/books', async(req, res) => {
     const result = await bookCollection.find().toArray()
+    res.send(result)
+})
+
+app.get('/book/:id', async (req, res) => {
+    const {id} = req.params
+    if (!ObjectId.isValid(id)) {
+        return res.status(404).json({ message: "Book not found" });
+    }
+    const result = await bookCollection.findOne({_id: new ObjectId(id)})
+    res.send(result);
+})
+
+app.post('/add-book', async (req, res) => {
+    const data = req.body
+    const result = await bookCollection.insertOne(data)
+
     res.send(result)
 })
 
