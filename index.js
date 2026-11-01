@@ -51,6 +51,44 @@ app.post('/add-book', async (req, res) => {
     res.send(result)
 })
 
+app.patch('/book/:id', async (req, res) => {
+    const {id} = req.params
+    const data = req.body
+
+    console.log(data);
+
+    if (!ObjectId.isValid(id)) {
+        return res.status(404).json({ message: "Book not found" });
+    }
+
+    const result = await bookCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: data }
+    );
+
+    if (result.matchedCount === 0) {
+        return res.status(404).json({ message: "Book not found" });
+    }
+
+    res.send(result);
+});
+
+app.delete('/book/:id', async (req, res) => {
+    const {id} = req.params
+
+    if (!ObjectId.isValid(id)) {
+        return res.status(404).json({ message: "Book not found" });
+    }
+
+    const result = await bookCollection.deleteOne({ _id: new ObjectId(id) });
+
+    if (result.deletedCount === 0) {
+        return res.status(404).json({ message: "Book not found" });
+    }
+
+    res.send({ message: "Book deleted successfully" });
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
