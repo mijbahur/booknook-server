@@ -30,23 +30,25 @@ const borrowCollection = db.collection("borrows");
 
 
 const verifyToken = async (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-        return res.status(401).send({ msg: "Unauthorized!" });
-    }
-    const token = authHeader.split(" ")[1];
-    if (!token) {
-        return res.status(401).send({ msg: "Unauthorized!" });
-    }
-    
-    const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
-    try {
-        const { payload } = await jwtVerify(token, JWKS);
-        next();
-    } catch (error) {
-        console.error("Token verification failed:", error.message);
-        return res.status(401).send({ msg: "Invalid or expired token!" });
-    }
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).send({ msg: "Unauthorized!" });
+  }
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).send({ msg: "Unauthorized!" });
+  }
+
+  const JWKS = createRemoteJWKSet(
+    new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
+  );
+
+  try { 
+    const { payload } = await jwtVerify(token, JWKS);
+    next();
+  } catch (error) {
+    return res.status(500).send({ msg: "Server Error!" });
+  }
 };
 
 app.get("/", (req, res) => {
@@ -58,7 +60,7 @@ app.get("/books", async (req, res) => {
     res.send(result);
 });
 
-app.get("/book/:id", async (req, res) => {
+app.get("/books/:id", async (req, res) => {
     const { id } = req.params;
     if (!ObjectId.isValid(id)) {
         return res.status(404).json({ message: "Book not found" });
@@ -70,14 +72,14 @@ app.get("/book/:id", async (req, res) => {
     res.send(result);
 });
 
-app.post("/add-book", verifyToken, async (req, res) => {
+app.post("/books", verifyToken, async (req, res) => {
     const data = req.body;
     const result = await bookCollection.insertOne(data);
 
     res.send(result);
 });
 
-app.patch("/book/:id", verifyToken, async (req, res) => {
+app.patch("/books/:id", verifyToken, async (req, res) => {
     const { id } = req.params;
     const data = req.body;
 
@@ -97,7 +99,7 @@ app.patch("/book/:id", verifyToken, async (req, res) => {
     res.send(result);
 });
 
-app.delete("/book/:id", verifyToken, async (req, res) => {
+app.delete("/books/:id", verifyToken, async (req, res) => {
     const { id } = req.params;
 
     if (!ObjectId.isValid(id)) {
@@ -168,7 +170,7 @@ app.post("/borrows", verifyToken, async (req, res) => {
     res.send({ _id: result.insertedId, ...borrow });
 });
 
-app.delete("/borrow/:id", verifyToken, async (req, res) => {
+app.delete("/borrows/:id", verifyToken, async (req, res) => {
     const { id } = req.params;
 
     if (!ObjectId.isValid(id)) {
