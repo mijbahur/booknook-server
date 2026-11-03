@@ -28,7 +28,7 @@ const db = mongoClient.db("booknook");
 const bookCollection = db.collection("books");
 const borrowCollection = db.collection("borrows");
 
-const JWKS = createRemoteJWKSet(new URL("http://localhost:3000/api/auth/jwks"));
+const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
 
 const verifyToken = async (req, res, next) => {
     const authHeader = req.headers.authorization;
