@@ -28,7 +28,6 @@ const db = mongoClient.db("booknook");
 const bookCollection = db.collection("books");
 const borrowCollection = db.collection("borrows");
 
-const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
 
 const verifyToken = async (req, res, next) => {
     const authHeader = req.headers.authorization;
@@ -39,7 +38,8 @@ const verifyToken = async (req, res, next) => {
     if (!token) {
         return res.status(401).send({ msg: "Unauthorized!" });
     }
-
+    
+    const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`));
     try {
         const { payload } = await jwtVerify(token, JWKS);
         next();
